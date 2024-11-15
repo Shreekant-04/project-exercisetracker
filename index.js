@@ -3,10 +3,11 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const db = require("./Model/db");
+const path = require("path");
 db();
 
 app.use(cors());
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const indexRoute = require("./Routes/indexRoute");
