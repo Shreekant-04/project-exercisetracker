@@ -42,7 +42,7 @@ Router.post("/users/:_id/exercises", async (req, res) => {
       return res.status(400).json({ message: "Invalid user ID format" });
     }
 
-    const user = await User.findById(_id);
+    let user = await User.findOne({ _id: _id });
     if (!user) {
       return res.status(404).json({ message: "No user found" });
     }
@@ -56,7 +56,16 @@ Router.post("/users/:_id/exercises", async (req, res) => {
     });
 
     await exercise.save();
-    res.status(201).json(exercise);
+
+    const responseuser = {
+      _id: user._id,
+      username: user.username,
+      description: exercise.description,
+      duration: exercise.duration,
+      date: exercise.date,
+    };
+
+    res.status(201).json(responseuser);
   } catch (err) {
     res.status(500).json({
       error: "An error occurred while adding the exercise",
@@ -66,12 +75,14 @@ Router.post("/users/:_id/exercises", async (req, res) => {
 });
 Router.get("/users/:_id/logs", async (req, res) => {
   const { _id } = req.params;
-  const { from, to } = req.query;
+  const { from, to, limit } = req.query;
+
   try {
     const user = await User.findById(_id);
-    if (!user) return res.status(404).json({ message: "No Data FOund" });
+    if (!user) return res.status(404).json({ message: "No user found" });
 
     const exercises = await Exercise.find({ userId: user._id });
+
     let log = [];
     if (exercises) {
       log = exercises
@@ -85,15 +96,16 @@ Router.get("/users/:_id/logs", async (req, res) => {
         .filter((exercise) => {
           if (from && to) {
             const date = new Date(exercise.date).getTime();
-            if (
-              date < new Date(from).getTime() ||
-              date > new Date(to).getTime()
-            ) {
-              return false;
-            }
+            return (
+              date >= new Date(from).getTime() && date <= new Date(to).getTime()
+            );
           }
           return true;
         });
+    }
+
+    if (limit) {
+      log = log.slice(0, parseInt(limit, 10));
     }
 
     res.status(200).json({
@@ -103,7 +115,10 @@ Router.get("/users/:_id/logs", async (req, res) => {
       log,
     });
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({
+      error: "An error occurred while fetching logs",
+      details: err.message,
+    });
   }
 });
 
