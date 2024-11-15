@@ -16,6 +16,9 @@ const schema = new mongoose.Schema({
   date: {
     type: String,
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
 });
 
 module.exports = mongoose.model("Exercise", schema);

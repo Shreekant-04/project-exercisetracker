@@ -52,6 +52,7 @@ Router.post("/users/:_id/exercises", async (req, res) => {
       description,
       duration,
       date: new Date(date).toDateString(),
+      userId: user._id,
     });
 
     await exercise.save();
@@ -66,14 +67,11 @@ Router.post("/users/:_id/exercises", async (req, res) => {
 Router.get("/users/:_id/logs", async (req, res) => {
   const { _id } = req.params;
   const { from, to } = req.query;
-  if (from || to) {
-    console.log(from, to);
-  }
   try {
     const user = await User.findById(_id);
     if (!user) return res.status(404).json({ message: "No Data FOund" });
 
-    const exercises = await Exercise.find({ username: user.username });
+    const exercises = await Exercise.find({ userId: user._id });
     let log = [];
     if (exercises) {
       log = exercises
