@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exercise Logs</title>
+    <link rel="shortcut icon" href="/exercise.png" type="image/x-icon">
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Exercise Logs</h1>
+
+      <!-- Form to Get User Logs -->
+      <form action="/api/users/logs" id="logs-form" method="get">
+        <h2>Get User's Logs</h2>
+        <input
+          id="log-uid"
+          type="text"
+          name="_id"
+          placeholder="User ID"
+          required
+        />
+        <input
+          id="log-from"
+          type="date"
+          name="from"
+          placeholder="From (yyyy-mm-dd)"
+        />
+        <input
+          id="log-to"
+          type="date"
+          name="to"
+          placeholder="To (yyyy-mm-dd)"
+        />
+        <input id="log-limit" type="text" name="limit" placeholder="Limit" />
+        <input type="submit" value="Get Logs" />
+      </form>
+
+      <div class="table">
+        <% if (log.length > 0) { %>
+        <table>
+          <caption>
+            <strong>
+              Exercise Logs for <%= username ? `${username}` : `User .` %>
+            </strong>
+          </caption>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Duration (mins.)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% log.forEach(logItem => { %>
+            <tr>
+              <td><%= logItem.date %></td>
+              <td><%= logItem.description %></td>
+              <td><%= logItem.duration %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+        <% } else { %>
+        <p class="no-logs">
+          No logs found <%= id ? `(ID: ${id})` : '' %> <%= username ? `for user
+          <strong>${username}</strong>.` : '' %>
+        </p>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>

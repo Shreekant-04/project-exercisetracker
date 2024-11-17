@@ -7,12 +7,29 @@ Router.post("/users", async (req, res) => {
   if (!username) {
     return res.status(500).json({ message: "username is required" });
   }
+  const user = await User.findOne({ username });
+  if (user) {
+    return res.render("response", {
+      data: { error: "Username is already taken" },
+    });
+  }
+
   try {
     const user = new User({ username });
     await user.save();
-    res.status(201).json(user);
+    res.render("response", {
+      data: {
+        message: "User created successfully",
+        user: { id: newUser._id, username: newUser.username },
+      },
+    });
   } catch (err) {
-    res.status(500).json(err);
+    res.render("response", {
+      data: {
+        error: "An error occurred while creating the user",
+        details: err.message,
+      },
+    });
   }
 });
 Router.get("/users", async (req, res) => {
@@ -24,59 +41,64 @@ Router.get("/users", async (req, res) => {
     res.status(500).json(err);
   }
 });
-Router.post("/users/:_id/exercises", async (req, res) => {
-  const { _id } = req.params;
-  let { description, duration, date } = req.body;
+Router.post("/users/exercises", async (req, res) => {
+  let { description, duration, date, _id } = req.body;
 
-  if (!description || !duration) {
-    return res
-      .status(400)
-      .json({ message: "description, duration, and date are required" });
+  if (!description || !duration || !_id) {
+    return res.render("response", {
+      data: {
+        error: "All fields (_id, description, and duration) are required",
+      },
+    });
   }
 
   if (!date) {
     date = Date.now();
   }
-  try {
-    if (!_id.match(/^[0-9a-fA-F]{24}$/)) {
-      return res.status(400).json({ message: "Invalid user ID format" });
-    }
 
-    let user = await User.findOne({ _id: _id });
+  try {
+    // Find user by ID
+    let user = await User.findById(_id);
     if (!user) {
-      return res.status(404).json({ message: "No user found" });
+      return res.render("response", {
+        data: { error: "No user found with the given _id" },
+      });
     }
 
     const exercise = new Exercise({
+      userId: user._id,
       username: user.username,
       description,
       duration,
       date: new Date(date).toDateString(),
-      userId: user._id,
     });
 
     await exercise.save();
 
     const responseuser = {
       _id: user._id,
-      username: user.username,
       description: exercise.description,
       duration: exercise.duration,
       date: exercise.date,
     };
 
-    res.status(201).json(responseuser);
+    // Render success response
+    res.render("response", {
+      data: { message: "Exercise added successfully", exercise: responseuser },
+    });
   } catch (err) {
-    res.status(500).json({
-      error: "An error occurred while adding the exercise",
-      details: err.message,
+    res.render("response", {
+      data: {
+        error: "An error occurred while adding the exercise",
+        details: err.message,
+      },
     });
   }
 });
-Router.get("/users/:_id/logs", async (req, res) => {
-  const { _id } = req.params;
-  const { from, to, limit } = req.query;
 
+Router.get("/users/logs", async (req, res) => {
+  console.log(req.url);
+  const { from, to, limit, _id } = req.query;
   try {
     const user = await User.findById(_id);
     if (!user) return res.status(404).json({ message: "No user found" });
@@ -84,7 +106,13 @@ Router.get("/users/:_id/logs", async (req, res) => {
     const exercises = await Exercise.find({ userId: user._id });
 
     let log = [];
-    if (exercises) {
+
+    function getMidnight(dateInput) {
+      const date = new Date(dateInput);
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    }
+    if (exercises.length > 0) {
       log = exercises
         .map((exercise) => {
           return {
@@ -94,30 +122,34 @@ Router.get("/users/:_id/logs", async (req, res) => {
           };
         })
         .filter((exercise) => {
-          if (from && to) {
-            const date = new Date(exercise.date).getTime();
+          if (from || to) {
+            const exerciseDate = getMidnight(exercise.date);
+            const fromDate = from ? getMidnight(from) : null;
+            const toDate = to ? getMidnight(to) : Date.now();
+
             return (
-              date >= new Date(from).getTime() && date <= new Date(to).getTime()
+              (!fromDate || exerciseDate >= fromDate) &&
+              (!toDate || exerciseDate <= toDate)
             );
           }
           return true;
         });
     }
 
-    if (limit) {
+    if (limit && !isNaN(parseInt(limit, 10)) && parseInt(limit, 10) > 0) {
       log = log.slice(0, parseInt(limit, 10));
     }
 
-    res.status(200).json({
-      _id: user._id,
+    res.render("logs", {
+      log,
+      id: user._id,
       username: user.username,
       count: log.length,
-      log,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({
-      error: "An error occurred while fetching logs",
-      details: err.message,
+      error: "An error occurred while fetching logs. Please try again later.",
     });
   }
 });

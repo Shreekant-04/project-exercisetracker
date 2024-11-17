@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dynamic Response</title>
+  <link rel="shortcut icon" href="/exercise.png" type="image/x-icon" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: rgb(37, 37, 37);
+      color: #f9f9f9;
+    }
+    .response-container {
+      border: 1px solid #ccc;
+      padding: 20px;
+      width: max-content;
+      border-radius: 5px;
+    }
+    .response-item {
+      margin-bottom: 10px;
+    }
+    .key {
+      font-weight: bold;
+      color: #32c3dd;
+    }
+    .value {
+      color: #e7e7e7;
+    }
+  </style>
+</head>
+<body>
+  <h1>Response</h1>
+  <div class="response-container">
+    <% for (const [key, value] of Object.entries(data)) { %>
+      <div class="response-item">
+        <span class="key"><%= key %>:</span>
+        <span class="value">
+          <% if (typeof value === 'object') { %>
+            <pre><%= JSON.stringify(value, null, 2) %></pre>
+          <% } else { %>
+            <%= value %>
+          <% } %>
+        </span>
+      </div>
+    <% } %>
+  </div>
+</body>
+</html>

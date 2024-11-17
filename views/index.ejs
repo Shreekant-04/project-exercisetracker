@@ -1,0 +1,58 @@
+<!-- index.ejs -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Exercise Tracker</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="shortcut icon" href="/exercise.png" type="image/x-icon" />
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Exercise Tracker</h1>
+
+      <!-- Create a New User -->
+      <form action="/api/users" method="post" target="_blank">
+        <h2>Create a New User</h2>
+        <input id="uname" type="text" name="username" placeholder="username" />
+        <input type="submit" value="Submit" />
+      </form>
+
+      <!-- Add Exercises -->
+      <form
+        action="/api/users/exercises"
+        id="exercise-form"
+        method="post"
+        target="_blank"
+      >
+        <h2>Add Exercises || <a href="/logs" target="_blank">Get Logs</a></h2>
+
+        <input id="uid" type="text" name="_id" placeholder="_id" />
+        <input
+          id="desc"
+          type="text"
+          name="description"
+          placeholder="description*"
+        />
+        <input
+          id="dur"
+          type="text"
+          name="duration"
+          placeholder="duration* (mins.)"
+        />
+        <input
+          id="date"
+          type="text"
+          name="date"
+          placeholder="date (yyyy-mm-dd)"
+        />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+  </body>
+</html>

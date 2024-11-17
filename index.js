@@ -7,6 +7,8 @@ const path = require("path");
 db();
 
 app.use(cors());
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "ejs");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -14,7 +16,12 @@ const indexRoute = require("./Routes/indexRoute");
 app.use("/api", indexRoute);
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/views/index.html");
+  res.render("index");
+});
+app.get("/logs", (req, res) => {
+  const log = [];
+
+  res.render("logs", { log, id: "", username: "" });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
